@@ -1,1 +1,4 @@
-Order	FileType	OutputDir	URL
+Order,FileType,OutputDir,URL
+1,type,dir,url
+2,type,dir,url
+3,type,dir,url

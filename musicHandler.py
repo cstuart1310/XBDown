@@ -1,14 +1,31 @@
 import os
 import csv
+from pytube import YouTube
+from pytube import Playlist 
 
-root=os.path.dirname(os.path.abspath(__file__))+"\\"
-# with open((root+"downloads.csv"),"r") as downloadsFile:
-#     reader=csv.reader(downloadsFile)
+def readFiles():
+    root=os.path.dirname(os.path.abspath(__file__))+"\\"
+    with open('downloads.csv', 'r') as file:
+        reader = csv.reader(file,delimiter=",")
+        rowCount=0
+        for row in reader:
+            rowCount=rowCount+1
+            downloadRow(row)
 
-#     for row in reader:
-#         print(row)
+def downloadRow(row):
+    name=row[0]
+    fileType=row[1]
+    outputDir=row[2]
+    url=row[3]
 
-with open('downloads.csv', 'r') as file:
-    reader = csv.reader(file)
-    for row in reader:
-        print(row)
+    print("Name:",name)
+    print("fileType:",fileType)
+    print("outputDir:",outputDir)
+    print("URL:",url)
+    print("_"*20)
+
+    
+
+
+
+readFiles()
