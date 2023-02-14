@@ -45,7 +45,7 @@ def downloadRow(row):
         print("Playlist contains",len(playlistVideos),"videos")
         for video in playlistVideos:
             print(video)
-            vidTitle=str(video.title)
+            vidTitle=getTitle(video)
             print(vidTitle)
             if "A" in fileTypeInfo:
                 getHighestAudio(video)
@@ -79,11 +79,21 @@ def getHighestVideo(video):#Downloads the highest quality video available
         except urllib.error.HTTPError:#If url isn't pytube compatible
                 print("Error, sleeping")
                 time.sleep(30)
-    
+
+def getTitle(video):
+    downloadSuccessful=False
+    try:
+        vidTitle=str(video.title)
+        downloadSuccessful=True                        
+        return vidTitle
+    except PytubeError:
+        print("Error, sleeping")
+        time.sleep(30)
+
 def convertToFileType(vidTitle,fileType):
     print("Converting to",fileType)
     outputName=vidTitle+"."+fileType
-    subprocess.run(['ffmpeg','-i',(vidTitle+".mp4"),'capture_output=True',outputName])
+    subprocess.run(['ffmpeg','-i',(vidTitle+".mp4"),outputName,"shell=True",'capture_output=True'])
 
 def getFileTypeInfo(fileType):
     fileTypeChannels=(fileTypes[fileType])
