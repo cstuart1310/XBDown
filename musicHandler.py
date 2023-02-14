@@ -117,6 +117,7 @@ def convertToFileType(vidTitle,fileType,outputName):
     else:
         print("Converting to",fileType)
         subprocess.run(['ffmpeg','-i',(vidTitle+".mp4"),outputName])
+        os.remove((vidTitle+".mp4"))#Removes the old file
 
 def moveToDest(outputName,outputDir):
     print("Moving to",outputDir)
@@ -129,13 +130,14 @@ def getFileTypeInfo(fileType):
 def checkDownloaded(vidTitle,logFilePath):
     logFile=open(logFilePath,"r")
     logLines=logFile.readlines()
+    logFile.close()
     if vidTitle in logLines:
         return True
     else:
         return False
 
 def removeIllegalChars(vidTitle):
-    invalid = '<>:"/\|?* '
+    invalid = '<>:"/\|?*'
     for character in invalid:
         vidTitle.replace(invalid,"")
     #vidTitle=vidTitle.decode('utf-8','ignore').encode("utf-8")
