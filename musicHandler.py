@@ -5,6 +5,7 @@ from pytube import Playlist
 import urllib
 import time
 import subprocess
+import shutil
 
 headerRows=1 #no of header/title rows to skip
 
@@ -50,13 +51,17 @@ def downloadRow(row):
                 getHighestAudio(video)
             if "V" in fileTypeInfo:
                 getHighestVideo(video)
-            convertToFileType(vidTitle,fileType)
+            
+            outputName=vidTitle+"."+fileType
+            convertToFileType(vidTitle,fileType,outputName)
+            moveToDest(outputName,outputDir)
         print("_"*20)
     else:
         print ("Error, url is either not a url or isn't pytube-able")
 
 def getHighestAudio(video):#Downloads the highest quality audio available
     print("Downloading Audio")
+    retryMultiplier=1
     downloadSuccessful=False
     while downloadSuccessful==False:
         try:
@@ -64,20 +69,23 @@ def getHighestAudio(video):#Downloads the highest quality audio available
             downloadSuccessful=True                        
         except urllib.error.HTTPError:#If url isn't pytube compatible
                 print("Error, sleeping")
-                time.sleep(30)
+                expBackOff(retryMultiplier)
+                retryMultiplier+=1
 
 def getHighestVideo(video):#Downloads the highest quality video available
     print("Downloading Video")
+    retryMultiplier=1
     downloadSuccessful=False
     while downloadSuccessful==False:
         try:
             video.streams.get_highest_resolution().download()
             downloadSuccessful=True                        
         except urllib.error.HTTPError:#If url isn't pytube compatible
-                print("Error, sleeping")
-                time.sleep(30)
-
+                print("Error")
+                expBackOff(retryMultiplier)
+                retryMultiplier+=1
 def getTitle(video):
+    retryMultiplier=1
     downloadSuccessful=False
     while downloadSuccessful==False:
         try:
@@ -85,25 +93,28 @@ def getTitle(video):
             downloadSuccessful=True                        
             return vidTitle
         except Exception as e:
-            print("Error, sleeping")
+            print("Error")
             print(e)
-            time.sleep(30)
-
-def convertToFileType(vidTitle,fileType):
+            expBackOff(retryMultiplier)
+            retryMultiplier+=1
+def convertToFileType(vidTitle,fileType,outputName):
     if fileType=="mp4":
         print("File is already mp4, skipping ffmpeg")
     else:
         print("Converting to",fileType)
-        outputName=vidTitle+"."+fileType
-        subprocess.run(['ffmpeg','-i',(vidTitle+".mp4"),outputName])#,shell=True,capture_output=True)
+        subprocess.run(['ffmpeg','-i',(vidTitle+".mp4"),outputName])
+
+def moveToDest(outputName,outputDir):
+    print("Moving to",outputDir)
+    shutil.move(outputName,outputDir)
 
 def getFileTypeInfo(fileType):
     fileTypeChannels=(fileTypes[fileType])
     return fileTypeChannels
 
 
-def expBackOff():
-    multiplier=1
+def expBackOff(retryMultiplier):
     delay=10
     print("Delaying for ",delay*multiplier,"seconds")
+    time.sleep(delay*multiplier)
 readFiles()
