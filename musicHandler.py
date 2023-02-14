@@ -137,15 +137,15 @@ def checkDownloaded(vidTitle,logFilePath):
         return False
 
 def removeIllegalChars(vidTitle):
-    invalid = '<>:"/\|?*'
+    invalid = ["<",">",":",'"',"/","|","?","*"]
     for character in invalid:
-        vidTitle.replace(invalid,"")
-    #vidTitle=vidTitle.decode('utf-8','ignore').encode("utf-8")
+        vidTitle=vidTitle.replace(invalid,"")
+    vidTitle=vidTitle.decode('utf-8','ignore').encode("utf-8")#probably could commit to one method or the other but oh well
     return vidTitle
 
 
 def appendDownloaded(vidTitle,logFilePath):
-    logFile=open(logFilePath,"r+")
+    logFile=open(logFilePath,"a")
     logFile.write(("\n"+vidTitle))
     logFile.close()
 
