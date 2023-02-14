@@ -44,15 +44,12 @@ def downloadRow(row):
         playlistVideos=playlist.videos
         print("Playlist contains",len(playlistVideos),"videos")
         for video in playlistVideos:
-            print(video)
             vidTitle=getTitle(video)
             print(vidTitle)
             if "A" in fileTypeInfo:
                 getHighestAudio(video)
             if "V" in fileTypeInfo:
                 getHighestVideo(video)
-            print(vidTitle)
-            print(fileType)
             convertToFileType(vidTitle,fileType)
         print("_"*20)
     else:
@@ -82,18 +79,23 @@ def getHighestVideo(video):#Downloads the highest quality video available
 
 def getTitle(video):
     downloadSuccessful=False
-    try:
-        vidTitle=str(video.title)
-        downloadSuccessful=True                        
-        return vidTitle
-    except pytube.exceptions.PytubeError:
-        print("Error, sleeping")
-        time.sleep(30)
+    while downloadSuccessful==False:
+        try:
+            vidTitle=str(video.title)
+            downloadSuccessful=True                        
+            return vidTitle
+        except Exception as e:
+            print("Error, sleeping")
+            print(e)
+            time.sleep(30)
 
 def convertToFileType(vidTitle,fileType):
-    print("Converting to",fileType)
-    outputName=vidTitle+"."+fileType
-    subprocess.run(['ffmpeg','-i',(vidTitle+".mp4"),outputName,"shell=True",'capture_output=True'])
+    if fileType=="mp4":
+        print("File is already mp4, skipping ffmpeg")
+    else:
+        print("Converting to",fileType)
+        outputName=vidTitle+"."+fileType
+        subprocess.run(['ffmpeg','-i',(vidTitle+".mp4"),outputName])#,shell=True,capture_output=True)
 
 def getFileTypeInfo(fileType):
     fileTypeChannels=(fileTypes[fileType])
