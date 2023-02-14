@@ -86,7 +86,7 @@ def getTitle(video):
         vidTitle=str(video.title)
         downloadSuccessful=True                        
         return vidTitle
-    except PytubeError:
+    except pytube.exceptions.PytubeError:
         print("Error, sleeping")
         time.sleep(30)
 
