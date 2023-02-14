@@ -30,7 +30,7 @@ def downloadRow(row):
     fileType=row[1]
     outputDir=row[2]
     playlist=Playlist(str(row[3]))
-
+    logFilePath=str(row[4])+".txt"
     
     fileTypeInfo=getFileTypeInfo(fileType)
 
@@ -38,6 +38,8 @@ def downloadRow(row):
     print("fileType:",row[1])
     print("outputDir:",row[2])
     print("Playlist:",row[3])
+    print("LogFile",row[4])
+
 
 
     print("\nDownloading Playlist",name)
@@ -45,16 +47,20 @@ def downloadRow(row):
         playlistVideos=playlist.videos
         print("Playlist contains",len(playlistVideos),"videos")
         for video in playlistVideos:
-            vidTitle=getTitle(video)
-            print(vidTitle)
-            if "A" in fileTypeInfo:
-                getHighestAudio(video)
-            if "V" in fileTypeInfo:
-                getHighestVideo(video)
+            vidTitle=getTitle(video)#gets title of vid
+            print("\n",vidTitle)
+            if checkDownloaded(vidTitle,logFilePath)==False:#If video hasn't been downloaded already
+                if "A" in fileTypeInfo:
+                    getHighestAudio(video)
+                if "V" in fileTypeInfo:
+                    getHighestVideo(video)
             
-            outputName=vidTitle+"."+fileType
-            convertToFileType(vidTitle,fileType,outputName)
-            moveToDest(outputName,outputDir)
+                outputName=vidTitle+"."+fileType
+                convertToFileType(vidTitle,fileType,outputName)
+                moveToDest(outputName,outputDir)
+                appendDownloaded(vidTitle,logFilePath)
+            else:#If already downloaded
+                print("Already downloaded")
         print("_"*20)
     else:
         print ("Error, url is either not a url or isn't pytube-able")
@@ -112,6 +118,19 @@ def getFileTypeInfo(fileType):
     fileTypeChannels=(fileTypes[fileType])
     return fileTypeChannels
 
+def checkDownloaded(videoTitle,logFilePath):
+    logFile=open(logFilePath,"r")
+    logLines=logFile.readlines()
+    if videoTitle in logLines:
+        return True
+    else:
+        return False
+
+
+def appendDownloaded(vidTitle,logFilePath):
+    logFile=open(logFilePath,"r+")
+    logFile.write(("\n"+videoTitle))
+    logfile.close()
 
 def expBackOff(retryMultiplier):
     delay=10
