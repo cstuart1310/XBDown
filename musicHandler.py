@@ -48,19 +48,24 @@ def downloadRow(row):
         print("Playlist contains",len(playlistVideos),"videos")
         for video in playlistVideos:
             vidTitle=getTitle(video)#gets title of vid
-            print("\n",vidTitle)
-            if checkDownloaded(vidTitle,logFilePath)==False:#If video hasn't been downloaded already
-                if "A" in fileTypeInfo:
-                    getHighestAudio(video)
-                if "V" in fileTypeInfo:
-                    getHighestVideo(video)
             
-                outputName=vidTitle+"."+fileType
-                convertToFileType(vidTitle,fileType,outputName)
-                moveToDest(outputName,outputDir)
-                appendDownloaded(vidTitle,logFilePath)
-            else:#If already downloaded
-                print("Already downloaded")
+            if vidTitle==False:
+                print("Error getting video title, skipping for now")
+                print("Errored video:",video)
+            elif vidTitle != False:#If no errors from getting video title
+                print("\n",vidTitle)
+                if checkDownloaded(vidTitle,logFilePath)==False:#If video hasn't been downloaded already
+                    if "A" in fileTypeInfo:
+                        getHighestAudio(video)
+                    if "V" in fileTypeInfo:
+                        getHighestVideo(video)
+                
+                    outputName=vidTitle+"."+fileType
+                    convertToFileType(vidTitle,fileType,outputName)
+                    moveToDest(outputName,outputDir)
+                    appendDownloaded(vidTitle,logFilePath)
+                else:#If already downloaded
+                    print("Already downloaded")
         print("_"*20)
     else:
         print ("Error, url is either not a url or isn't pytube-able")
@@ -90,12 +95,15 @@ def getHighestVideo(video):#Downloads the highest quality video available
                 print("Error")
                 expBackOff(retryMultiplier)
                 retryMultiplier+=1
-def getTitle(video):
+def getTitle(video):#Tries to get the video title. If it errors out 10 times because youtube have changed something, it just skips the video
     retryMultiplier=1
     downloadSuccessful=False
+    if retryMultiplier>10:
+        return False
     while downloadSuccessful==False:
         try:
             vidTitle=str(video.title)
+            vidTitle=removeIllegalChars(vidTitle)
             downloadSuccessful=True                        
             return vidTitle
         except Exception as e:
@@ -126,6 +134,13 @@ def checkDownloaded(vidTitle,logFilePath):
     else:
         return False
 
+def removeIllegalChars(vidTitle):
+    invalid = '<>:"/\|?* '
+    for character in invalid:
+        vidTitle.replace(invalid,"")
+    #vidTitle=vidTitle.decode('utf-8','ignore').encode("utf-8")
+    return vidTitle
+
 
 def appendDownloaded(vidTitle,logFilePath):
     logFile=open(logFilePath,"r+")
@@ -134,6 +149,6 @@ def appendDownloaded(vidTitle,logFilePath):
 
 def expBackOff(retryMultiplier):
     delay=10
-    print("Delaying for ",delay*multiplier,"seconds")
-    time.sleep(delay*multiplier)
+    print("Delaying for ",delay*retryMultiplier,"seconds")
+    time.sleep(delay*retryMultiplier)
 readFiles()
