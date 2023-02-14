@@ -12,7 +12,7 @@ headerRows=1 #no of header/title rows to skip
 #Filetype, incl audio, incl video
 fileTypes={
     "mp3":"A",
-    "mp4":"AV"
+    "mp4":"V"
 }
 
 def readFiles():
@@ -118,10 +118,10 @@ def getFileTypeInfo(fileType):
     fileTypeChannels=(fileTypes[fileType])
     return fileTypeChannels
 
-def checkDownloaded(videoTitle,logFilePath):
+def checkDownloaded(vidTitle,logFilePath):
     logFile=open(logFilePath,"r")
     logLines=logFile.readlines()
-    if videoTitle in logLines:
+    if vidTitle in logLines:
         return True
     else:
         return False
@@ -129,8 +129,8 @@ def checkDownloaded(videoTitle,logFilePath):
 
 def appendDownloaded(vidTitle,logFilePath):
     logFile=open(logFilePath,"r+")
-    logFile.write(("\n"+videoTitle))
-    logfile.close()
+    logFile.write(("\n"+vidTitle))
+    logFile.close()
 
 def expBackOff(retryMultiplier):
     delay=10
