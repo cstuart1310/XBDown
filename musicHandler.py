@@ -51,6 +51,8 @@ def downloadRow(row):
                 getHighestAudio(video)
             if "V" in fileTypeInfo:
                 getHighestVideo(video)
+            print(vidTitle)
+            print(fileType)
             convertToFileType(vidTitle,fileType)
         print("_"*20)
     else:
@@ -80,8 +82,8 @@ def getHighestVideo(video):#Downloads the highest quality video available
     
 def convertToFileType(vidTitle,fileType):
     print("Converting to",fileType)
-    fileName=vidTitle+".mp4"#may need to futureproof if non-mp4 streams get downloaded from youtube
-    subprocess.run('ffmpeg -i ',fileName,".",fileType,',shell=True,capture_output=True')
+    outputName=vidTitle+"."+fileType
+    subprocess.run(['ffmpeg','-i',(vidTitle+".mp4"),'capture_output=True',outputName])
 
 def getFileTypeInfo(fileType):
     fileTypeChannels=(fileTypes[fileType])
