@@ -9,6 +9,8 @@ import shutil
 
 headerRows=1 #no of header/title rows to skip
 
+retries=5
+
 #Filetype, incl audio, incl video
 fileTypes={
     "mp3":"A",
@@ -95,13 +97,13 @@ def getHighestVideo(video,vidTitle):#Downloads the highest quality video availab
                 print("Error")
                 expBackOff(retryMultiplier)
                 retryMultiplier+=1
-def getTitle(video):#Tries to get the video title. If it errors out 10 times because youtube have changed something, it just skips the video
+def getTitle(video):#Tries to get the video title. If it errors out x times because youtube have changed something, it just skips the video
     retryMultiplier=1
     downloadSuccessful=False
 
     while downloadSuccessful==False:
         try:
-            if retryMultiplier>10:
+            if retryMultiplier>retries:
                 return False
             vidTitle=str(video.title)
             vidTitle=removeIllegalChars(vidTitle)
