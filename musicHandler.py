@@ -56,9 +56,9 @@ def downloadRow(row):
                 print("\n",vidTitle)
                 if checkDownloaded(vidTitle,logFilePath)==False:#If video hasn't been downloaded already
                     if "A" in fileTypeInfo:
-                        getHighestAudio(video)
+                        getHighestAudio(video,vidTitle)
                     if "V" in fileTypeInfo:
-                        getHighestVideo(video)
+                        getHighestVideo(video,vidTitle)
                 
                     outputName=vidTitle+"."+fileType
                     convertToFileType(vidTitle,fileType,outputName)
@@ -70,26 +70,26 @@ def downloadRow(row):
     else:
         print ("Error, url is either not a url or isn't pytube-able")
 
-def getHighestAudio(video):#Downloads the highest quality audio available
+def getHighestAudio(video,vidTitle):#Downloads the highest quality audio available
     print("Downloading Audio")
     retryMultiplier=1
     downloadSuccessful=False
     while downloadSuccessful==False:
         try:
-            video.streams.get_audio_only().download()
+            video.streams.get_audio_only().download(filename=vidTitle)
             downloadSuccessful=True                        
         except urllib.error.HTTPError:#If url isn't pytube compatible
                 print("Error, sleeping")
                 expBackOff(retryMultiplier)
                 retryMultiplier+=1
 
-def getHighestVideo(video):#Downloads the highest quality video available
+def getHighestVideo(video,vidTitle):#Downloads the highest quality video available
     print("Downloading Video")
     retryMultiplier=1
     downloadSuccessful=False
     while downloadSuccessful==False:
         try:
-            video.streams.get_highest_resolution().download()
+            video.streams.get_highest_resolution().download(filename=vidTitle)
             downloadSuccessful=True                        
         except urllib.error.HTTPError:#If url isn't pytube compatible
                 print("Error")
@@ -98,10 +98,11 @@ def getHighestVideo(video):#Downloads the highest quality video available
 def getTitle(video):#Tries to get the video title. If it errors out 10 times because youtube have changed something, it just skips the video
     retryMultiplier=1
     downloadSuccessful=False
-    if retryMultiplier>10:
-        return False
+
     while downloadSuccessful==False:
         try:
+            if retryMultiplier>10:
+                return False
             vidTitle=str(video.title)
             vidTitle=removeIllegalChars(vidTitle)
             downloadSuccessful=True                        
@@ -128,19 +129,25 @@ def getFileTypeInfo(fileType):
     return fileTypeChannels
 
 def checkDownloaded(vidTitle,logFilePath):
-    logFile=open(logFilePath,"r")
-    logLines=logFile.readlines()
-    logFile.close()
+    logLines=open(logFilePath).read().splitlines()
+
+        
+
+    # logFile=open(logFilePath,"r")
+    # logLines=logFile.readlines()
+    # logLines=logLines.replace("\n","")#removes \n's from lines
+    print(logLines)
+    # logFile.close()
     if vidTitle in logLines:
         return True
     else:
         return False
 
 def removeIllegalChars(vidTitle):
-    invalid = ["<",">",":",'"',"/","|","?","*"]
+    invalid = ["<",">",":",'"',"/","|","?","*","&","'"]
     for character in invalid:
-        vidTitle=vidTitle.replace(invalid,"")
-    vidTitle=vidTitle.decode('utf-8','ignore').encode("utf-8")#probably could commit to one method or the other but oh well
+        vidTitle=vidTitle.replace(character,"")
+    #vidTitle=vidTitle.decode('utf-8','ignore').encode("utf-8")#probably could commit to one method or the other but oh well
     return vidTitle
 
 
@@ -148,6 +155,8 @@ def appendDownloaded(vidTitle,logFilePath):
     logFile=open(logFilePath,"a")
     logFile.write(("\n"+vidTitle))
     logFile.close()
+
+    
 
 def expBackOff(retryMultiplier):
     delay=10
