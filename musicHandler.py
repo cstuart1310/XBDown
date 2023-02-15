@@ -78,7 +78,7 @@ def getHighestAudio(video,vidTitle):#Downloads the highest quality audio availab
     downloadSuccessful=False
     while downloadSuccessful==False:
         try:
-            video.streams.get_audio_only().download(filename=vidTitle)
+            video.streams.get_audio_only().download(filename=(vidTitle+".mp4"))
             downloadSuccessful=True                        
         except urllib.error.HTTPError:#If url isn't pytube compatible
                 print("Error, sleeping")
@@ -91,7 +91,7 @@ def getHighestVideo(video,vidTitle):#Downloads the highest quality video availab
     downloadSuccessful=False
     while downloadSuccessful==False:
         try:
-            video.streams.get_highest_resolution().download(filename=vidTitle)
+            video.streams.get_highest_resolution().download(filename=(vidTitle+".mp4"))
             downloadSuccessful=True                        
         except urllib.error.HTTPError:#If url isn't pytube compatible
                 print("Error")
