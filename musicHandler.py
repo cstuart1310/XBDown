@@ -49,6 +49,7 @@ def downloadRow(row):
         playlistVideos=playlist.videos
         print("Playlist contains",len(playlistVideos),"videos")
         for video in playlistVideos:
+            print("\n"*3)
             vidTitle=getTitle(video)#gets title of vid
             
             if vidTitle==False:
@@ -133,13 +134,7 @@ def getFileTypeInfo(fileType):
 def checkDownloaded(vidTitle,logFilePath):
     logLines=open(logFilePath).read().splitlines()
 
-        
-
-    # logFile=open(logFilePath,"r")
-    # logLines=logFile.readlines()
-    # logLines=logLines.replace("\n","")#removes \n's from lines
     print(logLines)
-    # logFile.close()
     if vidTitle in logLines:
         return True
     else:
