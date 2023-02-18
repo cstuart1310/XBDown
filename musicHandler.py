@@ -9,7 +9,7 @@ import shutil
 
 headerRows=1 #no of header/title rows to skip
 
-retries=5
+retries=10
 
 #Filetype, incl audio, incl video
 fileTypes={
@@ -133,8 +133,6 @@ def getFileTypeInfo(fileType):
 
 def checkDownloaded(vidTitle,logFilePath):
     logLines=open(logFilePath).read().splitlines()
-
-    print(logLines)
     if vidTitle in logLines:
         return True
     else:
