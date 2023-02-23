@@ -124,8 +124,11 @@ def convertToFileType(vidTitle,fileType,outputName):
         os.remove((vidTitle+".mp4"))#Removes the old file
 
 def moveToDest(outputName,outputDir):
-    print("Moving to",outputDir)
-    shutil.move(outputName,outputDir)
+    try:
+        print("Moving to",outputDir)
+        shutil.move(outputName,outputDir)
+    except shutil.Error:
+        print("Error moving, file stuck in download dir")
 
 def getFileTypeInfo(fileType):
     fileTypeChannels=(fileTypes[fileType])
