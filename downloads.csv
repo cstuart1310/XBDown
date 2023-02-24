@@ -1,2 +1,1 @@
-Order,FileType,OutputDir,URL
-1,mp4,dir,https://www.youtube.com/watch?v=M6FPjkwuizY&list=PLzVOzarwdk_xUQ4oZPulLmx0sYdt2EOXb
+PlaylistName,FileType,OutputDir,URL,LogFileName
