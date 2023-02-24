@@ -8,7 +8,7 @@ import subprocess
 import shutil
 
 headerRows=1 #no of header/title rows to skip
-
+vidDelay=3#No of seconds to wait between each title lookup (Used to stop throttling)
 retries=10
 
 #Filetype, incl audio, incl video
@@ -49,6 +49,7 @@ def downloadRow(row):
         playlistVideos=playlist.videos
         print("Playlist contains",len(playlistVideos),"videos")
         for video in playlistVideos:
+            time.sleep(vidDelay)
             print("\n"*3)
             vidTitle=getTitle(video)#gets title of vid
             
