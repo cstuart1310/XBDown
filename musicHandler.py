@@ -9,7 +9,7 @@ import shutil
 
 headerRows=1 #no of header/title rows to skip
 vidDelay=3#No of seconds to wait between each title lookup (Used to stop throttling)
-retries=10
+retries=3
 
 #Filetype, incl audio, incl video
 fileTypes={
@@ -33,14 +33,16 @@ def downloadRow(row):
     outputDir=row[2]
     playlist=Playlist(str(row[3]))
     logFilePath=str(row[4])+".txt"
-    
+    category=row[5]
+
     fileTypeInfo=getFileTypeInfo(fileType)
 
-    print("Name:",row[0])
-    print("fileType:",row[1])
-    print("outputDir:",row[2])
-    print("Playlist:",row[3])
-    print("LogFile",row[4])
+    print("Name:",row[0])#Name of playlist
+    print("fileType:",row[1])#File type to convert to (Impacts which streams are downloaded)
+    print("outputDir:",row[2])#Dir to move files to when processing finished
+    print("Playlist:",row[3])#URL of playlist
+    print("LogFile",row[4])#File of videos already downloaded
+    print("Category:",row[5])#Type of video (Music, tv), used for naming things
 
 
 
@@ -48,7 +50,10 @@ def downloadRow(row):
     if ("https://") in row[3]:#Makes sure url is a url
         playlistVideos=playlist.videos
         print("Playlist contains",len(playlistVideos),"videos")
+
+        videoCounter=0#Resets counter
         for video in playlistVideos:
+            videoCounter=videoCounter+1#increments
             time.sleep(vidDelay)
             print("\n"*3)
             vidTitle=getTitle(video)#gets title of vid
@@ -59,41 +64,48 @@ def downloadRow(row):
             elif vidTitle != False:#If no errors from getting video title
                 print("\n",vidTitle)
                 if checkDownloaded(vidTitle,logFilePath)==False:#If video hasn't been downloaded already
+                    if category=="TVSeries":#Custom naming for tv series's
+                        print("TV Series naming")
+                        outputName="S01E"+(str(videoCounter).zfill(3))#Renames in format s01e001 s01e002 etc (One season per playlist)
+                    else:
+                        print("Standard naming")
+                        outputName=vidTitle
+
                     if "A" in fileTypeInfo:
-                        getHighestAudio(video,vidTitle)
+                        getHighestAudio(video,vidTitle,outputName)
                     if "V" in fileTypeInfo:
-                        getHighestVideo(video,vidTitle)
-                
-                    outputName=vidTitle+"."+fileType
+                        getHighestVideo(video,vidTitle,outputName)
+
+
                     convertToFileType(vidTitle,fileType,outputName)
-                    moveToDest(outputName,outputDir)
+                    moveToDest(outputName+"."+fileType,outputDir)
                     appendDownloaded(vidTitle,logFilePath)
-                else:#If already downloaded
+                elif checkDownloaded==True:#If already downloaded
                     print("Already downloaded")
         print("_"*20)
     else:
         print ("Error, url is either not a url or isn't pytube-able")
 
-def getHighestAudio(video,vidTitle):#Downloads the highest quality audio available
+def getHighestAudio(video,vidTitle,outputName):#Downloads the highest quality audio available
     print("Downloading Audio")
     retryMultiplier=1
     downloadSuccessful=False
     while downloadSuccessful==False:
         try:
-            video.streams.get_audio_only().download(filename=(vidTitle+".mp4"))
+            video.streams.get_audio_only().download(filename=(outputName+".mp4"))
             downloadSuccessful=True                        
         except urllib.error.HTTPError:#If url isn't pytube compatible
                 print("Error, sleeping")
                 expBackOff(retryMultiplier)
                 retryMultiplier+=1
 
-def getHighestVideo(video,vidTitle):#Downloads the highest quality video available
+def getHighestVideo(video,vidTitle,outputName):#Downloads the highest quality video available
     print("Downloading Video")
     retryMultiplier=1
     downloadSuccessful=False
     while downloadSuccessful==False:
         try:
-            video.streams.get_highest_resolution().download(filename=(vidTitle+".mp4"))
+            video.streams.get_highest_resolution().download(filename=(outputName+".mp4"))
             downloadSuccessful=True                        
         except urllib.error.HTTPError:#If url isn't pytube compatible
                 print("Error")
@@ -116,6 +128,7 @@ def getTitle(video):#Tries to get the video title. If it errors out x times beca
             print(e)
             expBackOff(retryMultiplier)
             retryMultiplier+=1
+
 def convertToFileType(vidTitle,fileType,outputName):
     if fileType=="mp4":
         print("File is already mp4, skipping ffmpeg")
@@ -125,22 +138,34 @@ def convertToFileType(vidTitle,fileType,outputName):
         os.remove((vidTitle+".mp4"))#Removes the old file
 
 def moveToDest(outputName,outputDir):
-    try:
-        print("Moving to",outputDir)
-        shutil.move(outputName,outputDir)
-    except shutil.Error:
-        print("Error moving, file stuck in download dir")
+    moved=False
+    moveRetryCounter=-1
+    while moved==False and moveRetryCounter>retries:
+        moveRetryCounter+=1
+        try:
+            print("Moving to",outputDir)
+            shutil.move(outputName,outputDir)
+            moved=True
+        except shutil.Error:
+            print("Error moving, file stuck in download dir")
+        except FileNotFoundError:
+            print("Output dir does not exist, creating it now")
+            os.makedirs(outputDir)
 
 def getFileTypeInfo(fileType):
     fileTypeChannels=(fileTypes[fileType])
     return fileTypeChannels
 
 def checkDownloaded(vidTitle,logFilePath):
-    logLines=open(logFilePath).read().splitlines()
-    if vidTitle in logLines:
-        return True
-    else:
-        return False
+    try:
+        logLines=open(logFilePath).read().splitlines()
+        if vidTitle in logLines:
+            return True
+        else:
+            return False
+    except FileNotFoundError:
+        print("Can't find file, creating a new one")
+        newLogFile=open(logFilePath,"w").close()
 
 def removeIllegalChars(vidTitle):
     invalid = ["<",">",":",'"',"/","|","?","*","&","'"]
@@ -161,4 +186,6 @@ def expBackOff(retryMultiplier):
     delay=10
     print("Delaying for ",delay*retryMultiplier,"seconds")
     time.sleep(delay*retryMultiplier)
+
+    
 readFiles()
