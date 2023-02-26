@@ -2,8 +2,5 @@
 downloads.csv
 *.3gpp
 *.mp4
-downloads.csv
 *.mp3
-logFile2bDown.txt
-logFileMp4.txt
-downloads.csv
+*.txt
