@@ -34,6 +34,7 @@ def downloadRow(row):
     playlist=Playlist(str(row[3]))
     logFilePath=str(row[4])+".txt"
     category=row[5]
+    videoCounterOffset=int(row[6])
 
     fileTypeInfo=getFileTypeInfo(fileType)
 
@@ -43,6 +44,7 @@ def downloadRow(row):
     print("Playlist:",row[3])#URL of playlist
     print("LogFile",row[4])#File of videos already downloaded
     print("Category:",row[5])#Type of video (Music, tv), used for naming things
+    print("VideoCounterOffset:",row[6])#Offset val used to skip vids before a series starts
 
 
 
@@ -52,7 +54,7 @@ def downloadRow(row):
         print("Playlist contains",len(playlistVideos),"videos")
 
         videoCounter=0#Resets counter
-        for video in playlistVideos:
+        for video in list(playlistVideos)[videoCounterOffset:]:#Loops through all videos after offset val
             videoCounter=videoCounter+1#increments
             time.sleep(vidDelay)
             print("\n"*3)
@@ -164,14 +166,13 @@ def checkDownloaded(vidTitle,logFilePath):
         else:
             return False
     except FileNotFoundError:
-        print("Can't find file, creating a new one")
-        newLogFile=open(logFilePath,"w").close()
+        print("Can't find log file, creating a new one")
+        open(logFilePath,"w").close()#Creates the log file
 
 def removeIllegalChars(vidTitle):
     invalid = ["<",">",":",'"',"/","|","?","*","&","'"]
     for character in invalid:
         vidTitle=vidTitle.replace(character,"")
-    #vidTitle=vidTitle.decode('utf-8','ignore').encode("utf-8")#probably could commit to one method or the other but oh well
     return vidTitle
 
 
