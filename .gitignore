@@ -7,3 +7,5 @@ downloads.csv
 logFile2bDown.txt
 logFileMp4.txt
 downloads.csv
+*.csv
+*.txt
