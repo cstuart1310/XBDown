@@ -136,7 +136,7 @@ def convertToFileType(vidTitle,fileType,outputName):
         print("File is already mp4, skipping ffmpeg")
     else:
         print("Converting to",fileType)
-        subprocess.run(['ffmpeg','-i',(vidTitle+".mp4"),outputName])
+        subprocess.run(['ffmpeg','-i',(vidTitle+".mp4"),(outputName+"."+fileType)])
         os.remove((vidTitle+".mp4"))#Removes the old file
 
 def moveToDest(outputName,outputDir):
