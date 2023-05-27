@@ -80,7 +80,7 @@ def downloadRow(row):
 
 
                     convertToFileType(vidTitle,fileType,outputName)
-                    moveToDest(outputName+"."+fileType,outputDir)
+                    moveToDest((outputName+"."+fileType),outputDir)
                     appendDownloaded(vidTitle,logFilePath)
                 elif checkDownloaded==True:#If already downloaded
                     print("Already downloaded")
@@ -141,11 +141,11 @@ def convertToFileType(vidTitle,fileType,outputName):
 
 def moveToDest(outputName,outputDir):
     moved=False
-    moveRetryCounter=-1
-    while moved==False and moveRetryCounter>retries:
+    moveRetryCounter=0
+    while moved==False and moveRetryCounter<retries:
         moveRetryCounter+=1
         try:
-            print("Moving to",outputDir)
+            print("Moving",outputName," to",outputDir)
             shutil.move(outputName,outputDir)
             moved=True
         except shutil.Error:
