@@ -96,7 +96,7 @@ def getHighestAudio(video,vidTitle,outputName):#Downloads the highest quality au
         try:
             video.streams.get_audio_only().download(filename=(outputName+".mp4"))
             downloadSuccessful=True                        
-        except urllib.error.HTTPError:#If url isn't pytube compatible
+        except (urllib.error.HTTPError, pytube.exceptions.AgeRestrictedError):#If url isn't pytube compatible
                 print("Error, sleeping")
                 expBackOff(retryMultiplier)
                 retryMultiplier+=1
