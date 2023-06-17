@@ -1,7 +1,8 @@
 import os
 import csv
 from pytube import YouTube
-from pytube import Playlist 
+from pytube import Playlist
+import pytube.exceptions 
 import urllib
 import time
 import subprocess
@@ -74,16 +75,16 @@ def downloadRow(row):
                         outputName=vidTitle
 
                     if "A" in fileTypeInfo:
-                        getHighestAudio(video,vidTitle,outputName)
+                        downloadResult=getHighestAudio(video,vidTitle,outputName)
                     if "V" in fileTypeInfo:
-                        getHighestVideo(video,vidTitle,outputName)
+                        downloadResult=getHighestVideo(video,vidTitle,outputName)
 
-
-                    convertToFileType(vidTitle,fileType,outputName)
-                    moveToDest((outputName+"."+fileType),outputDir)
-                    appendDownloaded(vidTitle,logFilePath)
-                elif checkDownloaded==True:#If already downloaded
-                    print("Already downloaded")
+                    if downloadResult==True: #if download was successful
+                        convertToFileType(vidTitle,fileType,outputName)
+                        moveToDest((outputName+"."+fileType),outputDir)
+                        appendDownloaded(vidTitle,logFilePath)
+                    elif checkDownloaded==True:#If already downloaded
+                        print("Already downloaded")
         print("_"*20)
     else:
         print ("Error, url is either not a url or isn't pytube-able")
@@ -95,11 +96,14 @@ def getHighestAudio(video,vidTitle,outputName):#Downloads the highest quality au
     while downloadSuccessful==False:
         try:
             video.streams.get_audio_only().download(filename=(outputName+".mp4"))
-            downloadSuccessful=True                        
+            downloadSuccessful=True       
+            return True                 
         except (urllib.error.HTTPError, pytube.exceptions.AgeRestrictedError):#If url isn't pytube compatible
                 print("Error, sleeping")
                 expBackOff(retryMultiplier)
                 retryMultiplier+=1
+                if retryMultiplier>retries:
+                    return False
 
 def getHighestVideo(video,vidTitle,outputName):#Downloads the highest quality video available
     print("Downloading Video")
@@ -108,11 +112,14 @@ def getHighestVideo(video,vidTitle,outputName):#Downloads the highest quality vi
     while downloadSuccessful==False:
         try:
             video.streams.get_highest_resolution().download(filename=(outputName+".mp4"))
-            downloadSuccessful=True                        
-        except urllib.error.HTTPError:#If url isn't pytube compatible
+            downloadSuccessful=True    
+            return True                    
+        except (urllib.error.HTTPError,pytube.exceptions.AgeRestrictedError):#If url isn't pytube compatible
                 print("Error")
                 expBackOff(retryMultiplier)
                 retryMultiplier+=1
+                if retryMultiplier>retries:
+                    return False
 def getTitle(video):#Tries to get the video title. If it errors out x times because youtube have changed something, it just skips the video
     retryMultiplier=1
     downloadSuccessful=False
