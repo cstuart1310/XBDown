@@ -69,7 +69,7 @@ def downloadRow(row):
                 if checkDownloaded(vidTitle,logFilePath)==False:#If video hasn't been downloaded already
                     if category=="TVSeries":#Custom naming for tv series's
                         print("TV Series naming")
-                        outputName="S01E"+(str(videoCounter).zfill(3))#Renames in format s01e001 s01e002 etc (One season per playlist)
+                        outputName=vidTitle+"- S01E"+(str(videoCounter).zfill(3))#Renames in format s01e001 s01e002 etc (One season per playlist)
                     else:
                         print("Standard naming")
                         outputName=vidTitle
