@@ -18,6 +18,7 @@ fileTypes={
 }
 
 def readFiles():
+def readFiles():#reads info from csv to find playlist to download
     with open('downloads.csv', 'r') as file:
         reader = csv.reader(file,delimiter=",")
         rowCount=1
@@ -28,14 +29,18 @@ def readFiles():
 
 def downloadRow(row):
     
+    #data from array from csv
     name=row[0]
     fileType=row[1]
     outputDir=row[2]
     playlist=Playlist(str(row[3]))
     logFilePath=str(row[4])+".txt"
+    logFilePath=str(row[4])+".txt"# eg xbdownLog.txt
     
     fileTypeInfo=getFileTypeInfo(fileType)
+    fileTypeInfo=getFileTypeInfo(fileType)#looks up dictionary to see if vid only, audio only, audio and video
 
+    #console info
     print("Name:",row[0])
     print("fileType:",row[1])
     print("outputDir:",row[2])
@@ -44,12 +49,14 @@ def downloadRow(row):
 
 
 
+    #downloading
     print("\nDownloading Playlist",name)
     if ("https://") in row[3]:#Makes sure url is a url
         playlistVideos=playlist.videos
+        playlistVideos=playlist.videos#gets array from the object
         print("Playlist contains",len(playlistVideos),"videos")
-        for video in playlistVideos:
-            time.sleep(vidDelay)
+        for video in playlistVideos.reverse():#each video ordered from newest to oldest
+            time.sleep(vidDelay)#sleeps to prevent ban
             print("\n"*3)
             vidTitle=getTitle(video)#gets title of vid
             
@@ -57,6 +64,7 @@ def downloadRow(row):
                 print("Error getting video title, skipping for now")
                 print("Errored video:",video)
             elif vidTitle != False:#If no errors from getting video title
+            elif vidTitle != None:#If no errors from getting video title
                 print("\n",vidTitle)
                 if checkDownloaded(vidTitle,logFilePath)==False:#If video hasn't been downloaded already
                     if "A" in fileTypeInfo:
@@ -110,18 +118,22 @@ def getTitle(video):#Tries to get the video title. If it errors out x times beca
             vidTitle=str(video.title)
             vidTitle=removeIllegalChars(vidTitle)
             downloadSuccessful=True                        
+            if retryMultiplier>retries:#if past allowed no of reattempts with no title
+            vidTitle=str(video.title)#gets title from url
+            vidTitle=removeIllegalChars(vidTitle)#removes emojis etc
             return vidTitle
-        except Exception as e:
+        except Exception as e:#If error getting title
             print("Error")
             print(e)
             expBackOff(retryMultiplier)
             retryMultiplier+=1
 def convertToFileType(vidTitle,fileType,outputName):
     if fileType=="mp4":
+    if fileType=="mp4" and "AV" in fileTypeInfo:#videos download as an mp4 from youtube and don't need any more converting
         print("File is already mp4, skipping ffmpeg")
     else:
         print("Converting to",fileType)
-        subprocess.run(['ffmpeg','-i',(vidTitle+".mp4"),outputName])
+        subprocess.run(['ffmpeg','-i',(vidTitle+".mp4"),outputName])#converts to desired formt
         os.remove((vidTitle+".mp4"))#Removes the old file
 
 def moveToDest(outputName,outputDir):
@@ -131,8 +143,8 @@ def moveToDest(outputName,outputDir):
     except shutil.Error:
         print("Error moving, file stuck in download dir")
 
-def getFileTypeInfo(fileType):
-    fileTypeChannels=(fileTypes[fileType])
+def getFileTypeInfo(fileType):#Returns Channels (Audio/Video) wanted by the filetype from the dic
+    fileTypeChannels=(fileTypes[fileType])#looks up the filetype (eg mp4) in dictionary for key (AV)
     return fileTypeChannels
 
 def checkDownloaded(vidTitle,logFilePath):
