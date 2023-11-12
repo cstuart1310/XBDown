@@ -17,6 +17,7 @@ fileTypes={
     "mp4":"AV"
 }
 
+
 def readFiles():#reads info from csv to find playlist to download
     with open('downloads.csv', 'r') as file:
         reader = csv.reader(file,delimiter=",")
@@ -28,7 +29,7 @@ def readFiles():#reads info from csv to find playlist to download
 
 def downloadRow(row):
     #data from array from csv
-    name=row[0]
+    playlistName=row[0]
     fileType=row[1]
     outputDir=row[2]
     playlist=Playlist(str(row[3]))
@@ -37,19 +38,22 @@ def downloadRow(row):
     fileTypeInfo=getFileTypeInfo(fileType)#looks up dictionary to see if vid only, audio only, audio and video
 
     #console info
-    print("Name:",row[0])
-    print("fileType:",row[1])
-    print("outputDir:",row[2])
-    print("Playlist:",row[3])
-    print("LogFile",row[4])
+    print("Name:",playlistName)
+    print("fileType:",fileType)
+    print("outputDir:",outputDir)
+    print("Playlist:",playlist)
+    print("LogFile",logFilePath)
 
+    if os.path.exists(logFilePath)==False:#If text file does not exist
+        print("Creating log file")
+        open(logFilePath[4],"a").close()#creates the file
 
     #downloading
-    print("\nDownloading Playlist",name)
+    print("\nDownloading Playlist",playlistName)
     if ("https://") in row[3]:#Makes sure url is a url
         playlistVideos=playlist.videos#gets array from the object
         print("Playlist contains",len(playlistVideos),"videos")
-        for video in playlistVideos.reverse():#each video ordered from newest to oldest
+        for video in playlistVideos:#each video ordered from newest to oldest
             time.sleep(vidDelay)#sleeps to prevent ban
             print("\n"*3)
             vidTitle=getTitle(video)#gets title of vid
@@ -69,7 +73,7 @@ def downloadRow(row):
                 
                     outputName=vidTitle+"."+fileType
                     convertToFileType(vidTitle,fileType,fileTypeInfo,outputName)
-                    moveToDest(outputName,outputDir)
+                    moveToDest(outputName,outputDir,vidTitle,fileType,playlistName)
                     appendDownloaded(vidTitle,logFilePath)
                 else:#If already downloaded
                     print("Already downloaded")
@@ -130,9 +134,25 @@ def convertToFileType(vidTitle,fileType,fileTypeInfo,outputName):
         subprocess.run(['ffmpeg','-i',(vidTitle+".mp4"),outputName])#converts to desired formt
         os.remove((vidTitle+".mp4"))#Removes the old file
 
-def moveToDest(outputName,outputDir):
+def moveToDest(outputName,outputDir,vidTitle,fileType,playlistName):
+    
+    #find and replaces outputdir to correct
+    dirReplacables=[
+    ["$title",vidTitle],
+    ["$format",fileType],
+    ["$workDir",(os.getcwd())]
+    ["$playlist",playlistName]
+    ]#values to replace
+
+    for dirReplacable in dirReplacables:#Loops through each of the 2d array vals
+        outputDir=outputDir.replace(dirReplacable[0],dirReplacable[1])#eg replaces $title with Brandy
+
+
     try:
         print("Moving to",outputDir)
+        shutil.move(outputName,outputDir)
+    except FileNotFoundError:#if the dir/subdirs aren't found
+        os.makedirs(outputDir)
         shutil.move(outputName,outputDir)
     except shutil.Error:
         print("Error moving, file stuck in",outputName)
