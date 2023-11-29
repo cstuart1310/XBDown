@@ -46,16 +46,19 @@ def downloadRow(row):
 
     if os.path.exists(logFilePath)==False:#If text file does not exist
         print("Creating log file")
-        open(logFilePath[4],"a").close()#creates the file
+        open(logFilePath,"a").close()#creates the file
 
     #downloading
     print("-"*20,"\nDownloading Playlist",playlistName)
     if ("https://") in row[3]:#Makes sure url is a url
-        playlistVideos=playlist.videos#gets array from the object
-        print("Playlist contains",len(playlistVideos),"videos")
-        for video in playlistVideos:#each video ordered from newest to oldest
-            time.sleep(vidDelay)#sleeps to prevent ban
-            vidTitle=getTitle(video)#gets title of vid
+        playlistVideos=list(playlist.videos)
+        playlistVideos.reverse()
+        print(playlistVideos)
+        print("Playlist contains", len(playlistVideos), "videos")
+
+        for video in playlistVideos:
+            time.sleep(vidDelay)  # sleeps to prevent ban
+            vidTitle = getTitle(video)  # gets title of vid
 
             print("\n")
             if vidTitle==None:
@@ -177,10 +180,9 @@ def removeIllegalChars(vidTitle):
 
 
 def appendDownloaded(vidTitle,logFilePath):
-    logFile=open(logFilePath,"a")
-    logFile.write(("\n"+vidTitle))
-    logFile.close()
-
+    with open(logFilePath,"a") as logFile:
+        logFile.write(("\n"+vidTitle))
+        
     
 
 def expBackOff(retryMultiplier):
