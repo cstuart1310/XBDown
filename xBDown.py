@@ -41,7 +41,6 @@ def downloadRow(row):
     print("Name:",playlistName)
     print("fileType:",fileType)
     print("outputDir:",outputDir)
-    print("Playlist:",playlist)
     print("LogFile",logFilePath)
 
     if os.path.exists(logFilePath)==False:#If text file does not exist
