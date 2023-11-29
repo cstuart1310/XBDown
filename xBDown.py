@@ -49,15 +49,15 @@ def downloadRow(row):
         open(logFilePath[4],"a").close()#creates the file
 
     #downloading
-    print("\nDownloading Playlist",playlistName)
+    print("-"*20,"\nDownloading Playlist",playlistName)
     if ("https://") in row[3]:#Makes sure url is a url
         playlistVideos=playlist.videos#gets array from the object
         print("Playlist contains",len(playlistVideos),"videos")
         for video in playlistVideos:#each video ordered from newest to oldest
             time.sleep(vidDelay)#sleeps to prevent ban
-            print("\n"*3)
             vidTitle=getTitle(video)#gets title of vid
-            
+
+            print("\n")
             if vidTitle==None:
                 print("Error getting video title, skipping for now")
                 print("Errored video:",video)
@@ -131,7 +131,7 @@ def convertToFileType(vidTitle,fileType,fileTypeInfo,outputName):
         print("File is already mp4, skipping ffmpeg")
     else:
         print("Converting to",fileType)
-        subprocess.run(['ffmpeg','-i',(vidTitle+".mp4"),outputName])#converts to desired formt
+        subprocess.run(['ffmpeg','-i',(vidTitle+".mp4"),outputName,"-y","-stats","-v","quiet"])#converts to desired formt
         os.remove((vidTitle+".mp4"))#Removes the old file
 
 def moveToDest(outputName,outputDir,vidTitle,fileType,playlistName):
@@ -140,7 +140,7 @@ def moveToDest(outputName,outputDir,vidTitle,fileType,playlistName):
     dirReplacables=[
     ["$title",vidTitle],
     ["$format",fileType],
-    ["$workDir",(os.getcwd())]
+    ["$workDir",(os.getcwd())],
     ["$playlist",playlistName]
     ]#values to replace
 
