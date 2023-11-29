@@ -8,7 +8,7 @@ import subprocess
 import shutil
 
 headerRows=1 #no of header/title rows to skip
-vidDelay=3#No of seconds to wait between each title lookup (Used to stop throttling)
+vidDelay=1#No of seconds to wait between each title lookup (Used to stop throttling)
 retries=10
 
 #Filetype, incl audio, incl video
@@ -53,14 +53,12 @@ def downloadRow(row):
     if ("https://") in row[3]:#Makes sure url is a url
         playlistVideos=list(playlist.videos)
         playlistVideos.reverse()
-        print(playlistVideos)
         print("Playlist contains", len(playlistVideos), "videos")
 
         for video in playlistVideos:
             time.sleep(vidDelay)  # sleeps to prevent ban
             vidTitle = getTitle(video)  # gets title of vid
 
-            print("\n")
             if vidTitle==None:
                 print("Error getting video title, skipping for now")
                 print("Errored video:",video)
