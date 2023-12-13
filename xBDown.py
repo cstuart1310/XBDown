@@ -6,6 +6,7 @@ import urllib
 import time
 import subprocess
 import shutil
+import argparse
 
 headerRows=1 #no of header/title rows to skip
 vidDelay=1#No of seconds to wait between each title lookup (Used to stop throttling)
@@ -18,8 +19,9 @@ fileTypes={
 }
 
 
-def readFiles():#reads info from csv to find playlist to download
-    with open('downloads.csv', 'r') as file:
+def readFiles(downloadsFile):#reads info from csv to find playlist to download
+    print("Reading",downloadsFile)
+    with open(downloadsFile, 'r') as file:
         reader = csv.reader(file,delimiter=",")
         rowCount=1
         for row in reader:
@@ -190,4 +192,14 @@ def expBackOff(retryMultiplier):
 
 
 #Main
-readFiles()
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-downloads","-d",default="downloads.csv")
+args = parser.parse_args()
+downloadsFile=args.downloads
+
+try:
+    readFiles(downloadsFile)
+except FileNotFoundError as e:
+    print("Error, file",downloadsFile,"not found")
+    print(e)
