@@ -10,7 +10,7 @@ import argparse
 
 headerRows=1 #no of header/title rows to skip
 vidDelay=1#No of seconds to wait between each title lookup (Used to stop throttling)
-retries=10
+maxRetries=3
 
 #Filetype, incl audio, incl video
 fileTypes={
@@ -87,7 +87,7 @@ def getHighestAudio(video,vidTitle):#Downloads the highest quality audio availab
     print("Downloading Audio")
     retryMultiplier=1
     downloadSuccessful=False
-    while downloadSuccessful==False:
+    while downloadSuccessful==False and retryMultiplier<maxRetries:
         try:
             video.streams.get_audio_only().download(filename=(vidTitle+".mp4"))
             downloadSuccessful=True                        
@@ -101,7 +101,7 @@ def getHighestVideoAudio(video,vidTitle):#Downloads the highest quality video av
     print("Downloading Video and Audio")
     retryMultiplier=1
     downloadSuccessful=False
-    while downloadSuccessful==False:
+    while downloadSuccessful==False and retryMultiplier<maxRetries:
         try:
             video.streams.get_highest_resolution().download(filename=(vidTitle+".mp4"))
             downloadSuccessful=True                        
@@ -116,7 +116,7 @@ def getTitle(video):#Tries to get the video title. If it errors out x times beca
 
     while titleDownloadSuccessful==False:
         try:
-            if retryMultiplier>retries:#if past allowed no of reattempts with no title
+            if retryMultiplier>maxRetries:#if past allowed no of reattempts with no title
                 return None
             
             vidTitle=str(video.title)#gets title from url
