@@ -66,19 +66,21 @@ def downloadRow(row):
             elif vidTitle != None:#If no errors from getting video title
                 print("\n",vidTitle)
                 if checkDownloaded(vidTitle,logFilePath)==False:#If video hasn't been downloaded already
+                    
                     if "A" in fileTypeInfo and "V" in fileTypeInfo: #if format wants audio and video
-                        getHighestVideoAudio(video,vidTitle)
+                        downloadSuccessful=getHighestVideoAudio(video,vidTitle)
                     elif "A" in fileTypeInfo:
-                        getHighestAudio(video,vidTitle)
+                        downloadSuccessful=getHighestAudio(video,vidTitle)
                     elif "V" in fileTypeInfo:
-                        getHighestVideoAudio(video,vidTitle)
-                
-                    outputName=vidTitle+"."+fileType
-                    convertToFileType(vidTitle,fileType,fileTypeInfo,outputName)
-                    moveToDest(outputName,outputDir,vidTitle,fileType,playlistName)
-                    appendDownloaded(vidTitle,logFilePath)
-                else:#If already downloaded
-                    print("Already downloaded")
+                        downloadSuccessful=getHighestVideoAudio(video,vidTitle)
+
+                    if downloadSuccessful==True:
+                        outputName=vidTitle+"."+fileType
+                        convertToFileType(vidTitle,fileType,fileTypeInfo,outputName)
+                        moveToDest(outputName,outputDir,vidTitle,fileType,playlistName)
+                        appendDownloaded(vidTitle,logFilePath)
+                    else:#If already downloaded
+                        print("Already downloaded")
         print("_"*20)
     else:
         print ("Error, url is either not a url or isn't pytube-able")
@@ -87,10 +89,15 @@ def getHighestAudio(video,vidTitle):#Downloads the highest quality audio availab
     print("Downloading Audio")
     retryMultiplier=1
     downloadSuccessful=False
+
+    if retryMultiplier>=maxRetries:
+        return False
+    
     while downloadSuccessful==False and retryMultiplier<maxRetries:
         try:
             video.streams.get_audio_only().download(filename=(vidTitle+".mp4"))
-            downloadSuccessful=True                        
+            downloadSuccessful=True
+            return downloadSuccessful
         except (urllib.error.HTTPError, KeyError, AgeRestrictedError) as e:#If an error was raised
                 print("Error, sleeping")
                 print(e)
@@ -101,10 +108,15 @@ def getHighestVideoAudio(video,vidTitle):#Downloads the highest quality video av
     print("Downloading Video and Audio")
     retryMultiplier=1
     downloadSuccessful=False
+
+    if retryMultiplier>=maxRetries:
+        return False
+
     while downloadSuccessful==False and retryMultiplier<maxRetries:
         try:
             video.streams.get_highest_resolution().download(filename=(vidTitle+".mp4"))
             downloadSuccessful=True                        
+            return downloadSuccessful
         except (urllib.error.HTTPError, KeyError):#If url isn't pytube compatible
                 print("Error")
                 expBackOff(retryMultiplier)
@@ -201,5 +213,4 @@ downloadsFile=args.downloads
 try:
     readFiles(downloadsFile)
 except FileNotFoundError as e:
-    print("Error, file",downloadsFile,"not found")
     print(e)
