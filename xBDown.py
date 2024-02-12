@@ -98,7 +98,7 @@ def getHighestAudio(video,vidTitle):#Downloads the highest quality audio availab
             video.streams.get_audio_only().download(filename=(vidTitle+".mp4"))
             downloadSuccessful=True
             return downloadSuccessful
-        except (urllib.error.HTTPError, KeyError, AgeRestrictedError) as e:#If an error was raised
+        except Exception as e:#If an error was raised
                 print("Error, sleeping")
                 print(e)
                 expBackOff(retryMultiplier)
